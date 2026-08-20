@@ -1,41 +1,55 @@
 package com.example.app_blocker;
 
+import android.app.ForegroundServiceStartNotAllowedException;
 import android.app.Notification;
 import android.app.Service;
+import android.content.Intent;
+import android.content.pm.ServiceInfo;
+import android.os.Build;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.ServiceCompat;
 
 public class ActiveAppNameCheckService extends Service {
-    private void startForeground() {
-        // Before starting the service as foreground check that the app has the
-        // appropriate runtime permissions. In this case, verify that the user
-        // has granted the CAMERA permission.
-        int cameraPermission =
-                ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-        if (cameraPermission == PackageManager.PERMISSION_DENIED) {
-            // Without camera permissions the service cannot run in the
-            // foreground. Consider informing user or updating your app UI if
-            // visible.
-            stopSelf();
-            return;
-        }
+    private static final int INTERVAL = 900;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
+    private final Runnable checkNameRunnable = new Runnable() {
+        @Override public void run() {
+            checkAppName();
+            handler.postDelayed(checkNameRunnable, INTERVAL);
+        }
+    };
+
+    @Override public IBinder onBind(Intent intent){
+        return null;
+    }
+
+    @Override public void onCreate(){
+        super.onCreate();
+    }
+
+    @Override public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             Notification notification =
                     new NotificationCompat.Builder(this, "CHANNEL_ID")
                             // Create the notification to display while the service
                             // is running
                             .build();
-            int type = 0;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                type = ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                        100,
+                        notification,
+                        ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                );
+            } else {
+                startForeground(100, notification);
             }
-            ServiceCompat.startForeground(
-                    /* service = */ this,
-                    /* id = */ 100, // Cannot be 0
-                    /* notification = */ notification,
-                    /* foregroundServiceType = */ type
-            );
         } catch (Exception e) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
                     e instanceof ForegroundServiceStartNotAllowedException
@@ -45,5 +59,16 @@ public class ActiveAppNameCheckService extends Service {
             }
             // ...
         }
+
+        return START_STICKY;
+    }
+
+    private void checkAppName(){
+        Log.d("Debug", "Foreground Service is working!");
+    }
+
+    @Override public void onDestroy(){
+        super.onDestroy();
+        handler.removeCallbacks(checkNameRunnable);
     }
 }

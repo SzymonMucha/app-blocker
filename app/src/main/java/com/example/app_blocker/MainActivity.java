@@ -3,6 +3,7 @@ package com.example.app_blocker;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 
@@ -21,6 +22,17 @@ public class MainActivity extends AppCompatActivity {
         return mode == AppOpsManager.MODE_ALLOWED;
     }
 
+    private void startAppNameCheckService() {
+        Intent intent = new Intent(this, ActiveAppNameCheckService.class);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
+        //Toast.makeText(this, "Upload service started", Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,5 +48,9 @@ public class MainActivity extends AppCompatActivity {
         if(!isPackageUsageStatsPermGranted()) {
             startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
         }
+
+        while(!isPackageUsageStatsPermGranted()){ continue; }
+
+        startAppNameCheckService();
     }
 }
