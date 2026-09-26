@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startAppNameCheckService() {
-        Intent intent = new Intent(this, ActiveAppNameCheckService.class);
+        Intent intent = new Intent(this, AppNameCheckService.class);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
