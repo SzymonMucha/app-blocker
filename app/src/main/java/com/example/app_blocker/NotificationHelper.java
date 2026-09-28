@@ -14,6 +14,7 @@ public class NotificationHelper {
     private Context context;
     private NotificationManager notifManager;
     private static final String CHANNEL_ID = "AppNameCheckServChannel";
+    private static final int NOTIFICATION_ID = 1001;
 
     public NotificationHelper(Context con){
         this.context = con;
@@ -53,5 +54,13 @@ public class NotificationHelper {
             channel.setDescription("Channel for app name check service notifications");
             notifManager.createNotificationChannel(channel);
         }
+    }
+
+    public void cancelNotification() {
+        notifManager.cancel(NOTIFICATION_ID);
+    }
+
+    public int getNotificationId(){
+        return NOTIFICATION_ID;
     }
 }

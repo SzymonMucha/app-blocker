@@ -18,7 +18,6 @@ public class AppNameCheckService extends Service{
     private NotificationHelper notifHelper;
     private boolean isRunning = false;
     private static final int CHECK_INTERVAL_MILLIS = 900;
-    private static final int NOTIFICATION_ID = 1001;
 
     private static final String TAG = "AppNameCheckService"; //Debug purposes
 
@@ -64,14 +63,14 @@ public class AppNameCheckService extends Service{
         Notification notif = notifHelper.createNotif(notifText);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(NOTIFICATION_ID, notif, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+            startForeground(notifHelper.getNotificationId(), notif, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
         } else {
-            startForeground(NOTIFICATION_ID, notif);
+            startForeground(notifHelper.getNotificationId(), notif);
         }
     }
 
     private void checkAppName(){
-        Lod.d(TAG, "Performing apps name check");
+        Log.d(TAG, "Performing apps name check");
 
         //to implement
     }
@@ -82,14 +81,12 @@ public class AppNameCheckService extends Service{
 
         Log.d(TAG, "Foreground service destroyed");
 
-        // Stop the periodic execution
         if (handler != null && checkRunnable != null) {
             handler.removeCallbacks(checkRunnable);
         }
 
-        // Cancel notification when service stops
-        if (notificationHelper != null) {
-            notificationHelper.cancelNotification();
+        if (notifHelper != null) {
+            notifHelper.cancelNotification();
         }
 
         isRunning = false;
@@ -98,7 +95,6 @@ public class AppNameCheckService extends Service{
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        // We don't bind to this service, so return null
         return null;
     }
 
