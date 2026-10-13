@@ -72,7 +72,7 @@ public class AppNameCheckService extends Service{
     private void checkAppName(){
         Log.d(TAG, "Performing apps name check");
 
-        //to implement
+
     }
 
     @Override
