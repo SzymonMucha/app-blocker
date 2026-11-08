@@ -34,7 +34,7 @@ public class NotificationHelper {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setContentTitle("App blocker service")
                 .setContentText(contentTxt)
-                .setSmallIcon(com.google.android.material.R.drawable.abc_ic_star_black_16dp) // Temporary
+                .setSmallIcon(com.google.android.material.R.drawable.navigation_empty_icon) // Temporary
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
                 .setContentIntent(pendingIntent)

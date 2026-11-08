@@ -3,6 +3,9 @@ package com.example.app_blocker;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.app.usage.UsageEvents;
+import android.app.usage.UsageStatsManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
@@ -17,8 +20,8 @@ public class AppNameCheckService extends Service{
     private Runnable checkRunnable;
     private NotificationHelper notifHelper;
     private boolean isRunning = false;
+    private String lastActivityName = null;
     private static final int CHECK_INTERVAL_MILLIS = 900;
-
     private static final String TAG = "AppNameCheckService"; //Debug purposes
 
     @Override
@@ -69,10 +72,49 @@ public class AppNameCheckService extends Service{
         }
     }
 
-    private void checkAppName(){
+    private String checkAppName(){
         Log.d(TAG, "Performing apps name check");
 
+        UsageStatsManager usageStatsManager = (UsageStatsManager) getApplicationContext().getSystemService(Context.USAGE_STATS_SERVICE);
 
+        try {
+            long currentTimeMillis = System.currentTimeMillis();
+            String activityName = null;
+            String packageName = null;
+
+            UsageEvents queryEvents = usageStatsManager.queryEvents(
+                    currentTimeMillis - 60000L,
+                    currentTimeMillis
+            );
+
+            while(queryEvents.hasNextEvent()){
+                UsageEvents.Event event = new UsageEvents.Event();
+                queryEvents.getNextEvent(event);
+
+                if(event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED){
+                    packageName = event.getPackageName();
+                    activityName = event.getClassName();
+                }
+                else if (event.getEventType() == UsageEvents.Event.ACTIVITY_PAUSED){
+                    if (event.getPackageName() != packageName){
+                        break;
+                    }
+                    packageName = null;
+                }
+            }
+
+            if(packageName != null && activityName != null){
+                return lastActivityName = activityName;
+            }
+            else{
+                return lastActivityName;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     @Override
